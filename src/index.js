@@ -1,7 +1,10 @@
 const express = require("express");
+const cors = require("cors");
 const app = express();
-const port = 3000;
+const port = 4000;
 const fs = require("fs");
+
+app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -9,10 +12,9 @@ app.get("/", (req, res) => {
 });
 
 app.get("/movies", (req, res) => {
-  res.json([
-    { id: 1, name: "Harry Potter" },
-    { id: 2, name: "Sonic 2" },
-  ]);
+  const data = fs.readFileSync("./data/movies.json", "utf8");
+  const movies = JSON.parse(data);
+  res.json(movies);
 });
 
 // app.get("movies/create", (req, res) => {
@@ -22,13 +24,15 @@ app.get("/movies", (req, res) => {
 //   ]);
 // });
 
-app.get("/movies/create", (req, res) => {
+app.post("/movies/create", (req, res) => {
   // 1. read json from file
   const data = fs.readFileSync("./data/movies.json", "utf8");
   const movies = JSON.parse(data);
 
+  const body = req.body;
+
   // 2. push to json array
-  movies.push({ id: 5, name: "Red One" });
+  movies.push({ id: Date.now(), ...body });
 
   //3. write json to file
   const moviesString = JSON.stringify(movies, null, 2);
@@ -82,6 +86,7 @@ app.put("/movies/:id", (req, res) => {
 
   const data = fs.readFileSync("./data/movies.json", "utf8");
   const movies = JSON.parse(data);
+
   const updatedData = req.body;
 
   // Find the index of the movie to be updated
